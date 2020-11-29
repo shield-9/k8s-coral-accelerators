@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: coral-edgetpu-device-plugin
+    namespace: kube-system
+    labels:
+        k8s-app: coral-edgetpu-device-plugin
+spec:
+    selector:
+        matchLabels:
+            k8s-app: coral-edgetpu-device-plugin
+    updateStrategy:
+        type: RollingUpdate
+    template:
+        metadata:
+            labels:
+                k8s-app: coral-edgetpu-device-plugin
+        spec:
+            priorityClassName: system-node-critical
+            affinity:
+                nodeAffinity:
+                    requiredDuringSchedulingIgnoredDuringExecution:
+                        nodeSelectorTerms:
+                        - matchExpressions:
+                          - key: ake.cyberagent.io/accelerator
+                            operator: In
+                            values:
+                            - coral-edgetpu
+            tolerations:
+            - operator: "Exists"
+              effect: "NoExecute"
+            - operator: "Exists"
+              effect: "NoSchedule"
+            volumes:
+            # - name: device-plugin
+            #   hostPath:
+            #       path: /var/lib/kubelet/device-plugins
+            - name: plugins-registry-probe-mode
+              hostPath:
+                  path: /var/lib/kubelet/plugins_registry
+            - name: dev
+              hostPath:
+                  path: /dev
+            containers:
+            - name: coral-edgetpu-device-plugin
+              image: coral-edgetpu-deviceplugin
+              command: ["./coral_edgetpu", "-logtostderr", "-plugin-directory", "/var/lib/kubelet/plugins_registry", "-v", "99"]
+              env:
+              securityContext:
+                  allowPrivilegeEscalation: true
+                  capabilities:
+                        drop: ["ALL"]
+              volumeMounts:
+              # - name: device-plugin
+              #   mountPath: /var/lib/kubelet/device-plugins
+              - name: plugins-registry-probe-mode
+                mountPath: /var/lib/kubelet/plugins_registry
+              - name: dev
+                mountPath: /dev
+            imagePullSecrets:
+            - name: gcr-registry-pull

@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: coral-edgetpu-example
+    labels:
+        app: coral-edgetpu-example
+spec:
+    replicas: 3
+    strategy:
+        rollingUpdate:
+            maxSurge: 0
+            maxUnavailable: 25%
+    selector:
+        matchLabels:
+            app: coral-edgetpu-example
+    template:
+        metadata:
+            labels:
+                app: coral-edgetpu-example
+        spec:
+            containers:
+            - name: edgetpu-demo
+              image: coral-edgetpu-example
+              command: ["/bin/bash", "-c", "--"]
+              args: ["trap : TERM INT; sleep infinity & wait"]
+              resources:
+                  limits:
+                      coral.ai/edgetpu: 1

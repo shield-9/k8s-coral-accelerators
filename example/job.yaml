@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: coral-edgetpu-example
+spec:
+  template:
+    spec:
+      containers:
+      - name: edgetpu-demo
+        image: coral-edgetpu-example
+        args:
+        - classification/classify_image.py
+        - --model=classification/models/mobilenet_v2_1.0_224_inat_bird_quant_edgetpu.tflite
+        - --labels=classification/models/inat_bird_labels.txt
+        - --input=classification/images/parrot.jpg
+        resources:
+          limits:
+            coral.ai/edgetpu: 1
+      restartPolicy: Never

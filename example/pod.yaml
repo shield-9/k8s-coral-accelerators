@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+        name: coral-edgetpu-example
+spec:
+        containers:
+        - name: edgetpu-demo
+          image: coral-edgetpu-example
+          command: ["/bin/bash", "-c", "--"]
+          args: ["trap : TERM INT; sleep infinity & wait"]
+          resources:
+                  limits:
+                          coral.ai/edgetpu: 1
